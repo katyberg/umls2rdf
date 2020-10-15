@@ -43,6 +43,9 @@ HAS_AUI = "umls:aui"
 HAS_CUI = "umls:cui"
 HAS_TUI = "umls:tui"
 
+ATN_RXCUI = "RXCUI"
+ATN_RXAUI = "RXAUI"
+
 # mysql> select * from rxnorm.RXNCONSO limit 1;
 # +-------+-----+------+------+------+------+--------+---------+------+----------+------+-------------+-----+----------+-----------------------------------+------+----------+------+
 # | RXCUI | LAT | TS   | LUI  | STT  | SUI  | ISPREF | RXAUI   | SAUI | SCUI     | SDUI | SAB         | TTY | CODE     | STR                               | SRL  | SUPPRESS | CVF  |
@@ -393,6 +396,16 @@ class RxnClass(object):
             rdf_term += "\t<%s> \"\"\"%s\"\"\"^^xsd:string ;\n"%(p, escape(atv))
             if p not in self.class_properties:
                 self.class_properties[p] = RxnAttribute(p, atn)
+
+        # RXNSAT contains relationship between RXCUI and UMLSCUI, UMLSAUI.
+        # However MRSAT contains relationship between CUI and RXCUI, RXAUI.
+        # Since we are generating RXNORM TTL based on RXNSAT we do not have RXCUI and RXAUI as relationship.
+        # But we can easily add them here based on data in self.atoms.
+        atn_rxcui = self.getURLTerm(ATN_RXCUI)
+        rdf_term += "\t<%s> \"\"\"%s\"\"\"^^xsd:string ;\n" % (atn_rxcui, term_code)
+        for atom in self.atoms:
+            atn_rxaui = self.getURLTerm(ATN_RXAUI)
+            rdf_term += "\t<%s> \"\"\"%s\"\"\"^^xsd:string ;\n" % (atn_rxaui, atom[RXNCONSO_RXAUI])
 
         #auis = set([x[MRCONSO_AUI] for x in self.atoms])
         cuis = set([x[RXNCONSO_RXCUI] for x in self.atoms])
